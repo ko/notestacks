@@ -95,9 +95,35 @@ function serializePosts()
    console.log(stacks_json);
 }
 
-window.addEventListener("DOMContentLoaded", function() {
-        clickedClassHandler("postit", function(index) {
-            makeEditable(this);
+function loadJson()
+{
+    var url = 'http://notes.yaksok.net/api/list/';
+    var obj = null;
+    var thehtml;
+    
+    $.getJSON(url, function(data) {
+            var items = [];
+            // {notes_list: Array[n]}
+            $.each(data, function(k, v) {
+                // [Object, Object, ..., Object]
+                $.each(v, function(i, value) {
+                    // Object
+                    thehtml = '<div class="postit">';
+                    thehtml += '<h2>' + value['title'] + '</h2>';
+                    thehtml += '<p>' + value['body'] + '</p>';
+                    thehtml += '</div>';
+                    items[items.length] = thehtml;
+                    });
+                });
+                $('.postit-stack').append(items.join(''));
             });
-}, false);
+}
+
+$(document).ready(function() {
+    clickedClassHandler("postit", function(index) {
+        makeEditable(this);
+        });
+
+    loadJson();
+});
 
