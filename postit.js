@@ -38,11 +38,11 @@ function makeEditable(elem)
     for (i in childs) {
         if (childs[i].nodeName == "H2") {
             childs[i].setAttribute('contenteditable', 'true');
-            childs[i].setAttribute('onBlur', 'serializePosts();');
+            childs[i].setAttribute('onBlur', 'postJson(this);');
         }
         if (childs[i].nodeName == "P") {
             childs[i].setAttribute('contenteditable', 'true');
-            childs[i].setAttribute('onBlur', 'serializePosts();');
+            childs[i].setAttribute('onBlur', 'postJson(this);');
         }
     }
 }
@@ -97,7 +97,7 @@ function serializePosts()
 
 function loadJson()
 {
-    var url = 'http://notes.yaksok.net/api/list/';
+    var url = 'http://notes.yaksok.net/api/list/get/';
     var obj = null;
     var thehtml;
     
@@ -108,9 +108,10 @@ function loadJson()
                 // [Object, Object, ..., Object]
                 $.each(v, function(i, value) {
                     // Object
-                    thehtml = '<div class="postit">';
-                    thehtml += '<h2>' + value['title'] + '</h2>';
-                    thehtml += '<p>' + value['body'] + '</p>';
+                    thehtml = '';
+                    thehtml += '<div class="postit" data-postid=' + value['id'] + '>';
+                    thehtml += '<h2 contenteditable="true" onBlur="postJson(this);">' + value['title'] + '</h2>';
+                    thehtml += '<p contenteditable="true" onBlur="postJson(this);">' + value['body'] + '</p>';
                     thehtml += '</div>';
                     items[items.length] = thehtml;
                     });
@@ -119,11 +120,38 @@ function loadJson()
             });
 }
 
+function postJson(elem)
+{
+    var url = 'http://notes.yaksok.net/api/list/set/';
+    var obj = null;
+    var pid = $(elem).parent().attr('data-postid');
+    var ptitle = $(elem).html();
+    var pbody = $(elem).html();
+    console.log(pid);
+    console.log(elem);
+    console.log(ptitle);
+    var posting = { type: 1, stackid: 1, noteid: pid, title: ptitle, body: pbody };
+   
+    $.post(url, posting, function(data) {
+            console.log(posting);
+            });
+
+    console.log('postJson returning');
+}
+
+function updateLastClicked(e)
+{
+    console.log(e.index());
+}
+
 $(document).ready(function() {
+
     clickedClassHandler("postit", function(index) {
         makeEditable(this);
         });
 
     loadJson();
+
+    //postJson();
 });
 
